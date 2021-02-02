@@ -1,0 +1,103 @@
+zabbix_export:
+  version: '5.2'
+  date: '2021-02-02T15:39:57Z'
+  groups:
+    -
+      name: BOLID
+    -
+      name: 'Инженерная инфраструктура'
+  templates:
+    -
+      template: S2000R-ARR32
+      name: С2000Р-АРР32
+      groups:
+        -
+          name: BOLID
+        -
+          name: 'Инженерная инфраструктура'
+      items:
+        -
+          name: Status
+          type: SIMPLE
+          key: 'modbus_read[{$MODBUS_PORT},{$MODBUS_SLAVE},{$MODBUS_REG},3,1*uint16]'
+          history: 1w
+          trends: '0'
+          valuemap:
+            name: S2000R-ARR32
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.00390625'
+          triggers:
+            -
+              expression: '{last()}=149'
+              name: 'Взлом корпуса прибора'
+              priority: WARNING
+              tags:
+                -
+                  tag: dept
+                  value: 'asu, oper'
+            -
+              expression: |
+                {last()}<>3 and {last()}<>17 and {last()}<>24 and {last()}<>187 and {last()}<>149 and
+                {last()}<>199
+              name: 'Неизвестное состояние'
+              priority: AVERAGE
+              tags:
+                -
+                  tag: dept
+                  value: 'asu, oper'
+            -
+              expression: '{last()}=17'
+              name: 'Неудачное взятие'
+              priority: WARNING
+              tags:
+                -
+                  tag: dept
+                  value: asu
+            -
+              expression: '{last()}=187'
+              name: 'Потеряна связь с прибором'
+              priority: HIGH
+              tags:
+                -
+                  tag: dept
+                  value: oper
+            -
+              expression: '{nodata({$NODATA_PERIOD})}=1'
+              name: 'Превышено время отсутствия по MODBUS'
+              priority: HIGH
+              tags:
+                -
+                  tag: dept
+                  value: asu
+            -
+              expression: '{last()}=3'
+              name: 'Тревога проникновения'
+              priority: WARNING
+              tags:
+                -
+                  tag: dept
+                  value: 'asu, oper'
+      macros:
+        -
+          macro: '{$MODBUS_PORT}'
+          value: 'enc://127.0.0.1:4001'
+        -
+          macro: '{$MODBUS_REG}'
+          description: 'Вычисляется как (40000+ "№ зоны Modbus")-1'
+        -
+          macro: '{$MODBUS_SLAVE}'
+          value: '1'
+          description: UID
+        -
+          macro: '{$NODATA_PERIOD}'
+          value: '600'
+  value_maps:
+    -
+      name: S2000R-ARR32
+      mappings:
+        -
+          value: '24'
+          newvalue: 'Вход взят на охрану'

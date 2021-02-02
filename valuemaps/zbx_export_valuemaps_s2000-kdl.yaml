@@ -1,0 +1,22 @@
+zabbix_export:
+  version: '5.2'
+  date: '2021-02-02T15:42:34Z'
+  value_maps:
+    -
+      name: S2000-KDL
+      mappings:
+        -
+          value: '149'
+          newvalue: 'Взлом корпуса прибора'
+        -
+          value: '199'
+          newvalue: 'Восстановление источника питания'
+        -
+          value: '215'
+          newvalue: 'Короткое замыкание ДПЛС'
+        -
+          value: '250'
+          newvalue: 'Потеряна связь с прибором'
+        -
+          value: '251'
+          newvalue: 'Восстановлена связь с прибором'

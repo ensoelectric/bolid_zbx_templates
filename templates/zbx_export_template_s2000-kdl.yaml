@@ -1,0 +1,105 @@
+zabbix_export:
+  version: '5.2'
+  date: '2021-02-02T15:39:18Z'
+  groups:
+    -
+      name: BOLID
+    -
+      name: 'Инженерная инфраструктура'
+  templates:
+    -
+      template: S2000-KDL
+      name: С2000-КДЛ
+      groups:
+        -
+          name: BOLID
+        -
+          name: 'Инженерная инфраструктура'
+      items:
+        -
+          name: Status
+          type: SIMPLE
+          key: 'modbus_read[{$MODBUS_PORT},{$MODBUS_SLAVE},{$MODBUS_REG},3,1*uint16]'
+          history: 1w
+          trends: '0'
+          valuemap:
+            name: S2000-KDL
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.00390625'
+          triggers:
+            -
+              expression: '{last()}=149'
+              name: 'Взлом корпуса прибора'
+              priority: HIGH
+              tags:
+                -
+                  tag: dept
+                  value: 'asu, oper'
+            -
+              expression: '{last()}=215'
+              name: 'Короткое замыкание ДПЛС'
+              priority: HIGH
+              tags:
+                -
+                  tag: dept
+                  value: oper
+            -
+              expression: '{last()}<>149 and {last()}<>215 and {last()}<>199 and {last()}<>250'
+              name: 'Неизвестное состояние'
+              priority: AVERAGE
+              tags:
+                -
+                  tag: dept
+                  value: 'asu, oper'
+            -
+              expression: '{last()}=250'
+              name: 'Потеряна связь с прибором'
+              priority: HIGH
+              tags:
+                -
+                  tag: dept
+                  value: 'asu, oper'
+            -
+              expression: '{nodata({$NODATA_PERIOD})}=1'
+              name: 'Превышено время отсутствия по MODBUS'
+              priority: HIGH
+              tags:
+                -
+                  tag: dept
+                  value: asu
+      macros:
+        -
+          macro: '{$MODBUS_PORT}'
+          value: 'enc://127.0.0.1:4001'
+        -
+          macro: '{$MODBUS_REG}'
+          description: 'Вычисляется как (40000+ "№ зоны Modbus")-1'
+        -
+          macro: '{$MODBUS_SLAVE}'
+          value: '1'
+          description: UID
+        -
+          macro: '{$NODATA_PERIOD}'
+          value: '600'
+  value_maps:
+    -
+      name: S2000-KDL
+      mappings:
+        -
+          value: '149'
+          newvalue: 'Взлом корпуса прибора'
+        -
+          value: '199'
+          newvalue: 'Восстановление источника питания'
+        -
+          value: '215'
+          newvalue: 'Короткое замыкание ДПЛС'
+        -
+          value: '250'
+          newvalue: 'Потеряна связь с прибором'
+        -
+          value: '251'
+          newvalue: 'Восстановлена связь с прибором'

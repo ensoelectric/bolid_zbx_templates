@@ -1,0 +1,22 @@
+zabbix_export:
+  version: '5.2'
+  date: '2021-02-02T15:41:57Z'
+  value_maps:
+    -
+      name: S2000-DZ
+      mappings:
+        -
+          value: '79'
+          newvalue: 'Тревога затопления'
+        -
+          value: '80'
+          newvalue: 'Восстановление датчика затопления'
+        -
+          value: '165'
+          newvalue: 'Ошибка параметров входа'
+        -
+          value: '187'
+          newvalue: 'Потеря связи со входом'
+        -
+          value: '251'
+          newvalue: 'Восстановлена связь с прибором'

@@ -1,0 +1,10 @@
+zabbix_export:
+  version: '5.2'
+  date: '2021-02-02T15:43:04Z'
+  value_maps:
+    -
+      name: S2000R-ARR32
+      mappings:
+        -
+          value: '24'
+          newvalue: 'Вход взят на охрану'

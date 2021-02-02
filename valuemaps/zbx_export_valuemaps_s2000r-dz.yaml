@@ -1,0 +1,34 @@
+zabbix_export:
+  version: '5.2'
+  date: '2021-02-02T15:43:29Z'
+  value_maps:
+    -
+      name: S2000R-DZ
+      mappings:
+        -
+          value: '79'
+          newvalue: 'Тревога затопления'
+        -
+          value: '80'
+          newvalue: 'Восстановление датчика затопления'
+        -
+          value: '149'
+          newvalue: 'Взлом корпуса прибора'
+        -
+          value: '165'
+          newvalue: 'Ошибка параметров входа'
+        -
+          value: '187'
+          newvalue: 'Потеря связи со входом'
+        -
+          value: '200'
+          newvalue: 'Восстановление батареи'
+        -
+          value: '211'
+          newvalue: 'Основная батарея разряжена'
+        -
+          value: '212'
+          newvalue: 'Разряд резервной батареи'
+        -
+          value: '251'
+          newvalue: 'Восстановлена связь с прибором'

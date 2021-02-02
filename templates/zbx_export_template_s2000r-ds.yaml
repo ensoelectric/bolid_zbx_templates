@@ -1,0 +1,147 @@
+zabbix_export:
+  version: '5.2'
+  date: '2021-02-02T15:40:16Z'
+  groups:
+    -
+      name: BOLID
+    -
+      name: 'Инженерная инфраструктура'
+  templates:
+    -
+      template: S2000R-DZ
+      name: С2000Р-ДЗ
+      groups:
+        -
+          name: BOLID
+        -
+          name: 'Инженерная инфраструктура'
+      items:
+        -
+          name: Status
+          type: SIMPLE
+          key: 'modbus_read[{$MODBUS_PORT},{$MODBUS_SLAVE},{$MODBUS_REG},3,1*uint16]'
+          delay: 30s
+          history: 1w
+          trends: '0'
+          valuemap:
+            name: S2000R-DZ
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.00390625'
+          triggers:
+            -
+              expression: '{last()}=149'
+              name: 'Взлом корпуса'
+              priority: HIGH
+              tags:
+                -
+                  tag: dept
+                  value: 'asu, oper'
+            -
+              expression: |
+                {last()}<>79 and 
+                {last()}<>80 and 
+                {last()}<>149 and 
+                {last()}<>165 and {last()}<>211 and {last()}<>187 and {last()}<>212 and {last()}<>200 and {last()}<>251
+              name: 'Неизвестное состояние'
+              priority: AVERAGE
+              tags:
+                -
+                  tag: dept
+                  value: 'asu, oper'
+            -
+              expression: '{last()}=211'
+              name: 'Основная батарея разряжена'
+              priority: WARNING
+              tags:
+                -
+                  tag: dept
+                  value: oper
+            -
+              expression: '{last()}=165'
+              name: 'Ошибка параметров ШС'
+              priority: HIGH
+              description: 'ШС неработоспособен из-за ошибок параметров конфигурации'
+              tags:
+                -
+                  tag: dept
+                  value: asu
+            -
+              expression: '{last()}=187'
+              name: 'Потеря связи'
+              priority: HIGH
+              tags:
+                -
+                  tag: dept
+                  value: oper
+            -
+              expression: '{nodata({$NODATA_PERIOD})}=1'
+              name: 'Превышено время отсутствия по MODBUS'
+              priority: HIGH
+              tags:
+                -
+                  tag: dept
+                  value: asu
+            -
+              expression: '{last()}=212'
+              name: 'Разряд резервной батареи'
+              priority: AVERAGE
+              tags:
+                -
+                  tag: dept
+                  value: oper
+            -
+              expression: '{last()}=79'
+              name: 'Тревога затопления'
+              priority: DISASTER
+              tags:
+                -
+                  tag: dept
+                  value: oper
+      macros:
+        -
+          macro: '{$MODBUS_PORT}'
+          value: 'enc://127.0.0.1:4001'
+        -
+          macro: '{$MODBUS_REG}'
+          description: 'Вычисляется как (40000+ "№ зоны Modbus")-1'
+        -
+          macro: '{$MODBUS_SLAVE}'
+          value: '1'
+          description: UID
+        -
+          macro: '{$NODATA_PERIOD}'
+          value: '600'
+  value_maps:
+    -
+      name: S2000R-DZ
+      mappings:
+        -
+          value: '79'
+          newvalue: 'Тревога затопления'
+        -
+          value: '80'
+          newvalue: 'Восстановление датчика затопления'
+        -
+          value: '149'
+          newvalue: 'Взлом корпуса прибора'
+        -
+          value: '165'
+          newvalue: 'Ошибка параметров входа'
+        -
+          value: '187'
+          newvalue: 'Потеря связи со входом'
+        -
+          value: '200'
+          newvalue: 'Восстановление батареи'
+        -
+          value: '211'
+          newvalue: 'Основная батарея разряжена'
+        -
+          value: '212'
+          newvalue: 'Разряд резервной батареи'
+        -
+          value: '251'
+          newvalue: 'Восстановлена связь с прибором'
