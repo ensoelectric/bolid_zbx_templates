@@ -1,0 +1,469 @@
+zabbix_export:
+  version: '5.2'
+  date: '2021-04-27T14:03:56Z'
+  groups:
+    -
+      name: BOLID
+  templates:
+    -
+      template: 'RIP 12 mod 56 RIP 12 6 80 M3 R RS EXTENDED'
+      name: 'РИП-12 исп.56 РИП-12-6/80M3-R-RS РАСШИРЕННЫЙ'
+      description: |
+        Прибор от производителя ЗАО НВП "Болид". Предназначен для работы в составе ИСО "Орион" для питания извещателей, приборов ОПС, СКУД и пожарной автоматики.
+        12В, 6А (мах 8А); емкость АБ 2*40Ач; световая индикация; звуковая сигнализация; датчик вскрытия корпуса; защита: от перенапряжения, от КЗ; интерфейс RS-485.
+      groups:
+        -
+          name: BOLID
+      items:
+        -
+          name: Capacity
+          type: DEPENDENT
+          key: CAPACITY
+          delay: '0'
+          history: 1w
+          trends: '0'
+          description: 'ШС №5 -'
+          valuemap:
+            name: 'RIP 12 mod 56 RIP 12 6 80 M3 R RS'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.status[5]'
+            -
+              type: HEX_TO_DECIMAL
+              parameters:
+                - ''
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.00390625'
+          master_item:
+            key: 'rip_12_mod_56.sh[{$MODBUS_PORT}, {$MODBUS_SLAVE}, {$STATUS_REG}]'
+          triggers:
+            -
+              expression: '{last()}<>196 and {last()}<>197 and {last()}<>250'
+              name: 'Неизвестное состояние Capacity'
+              priority: AVERAGE
+        -
+          name: Iout
+          type: DEPENDENT
+          key: IOUT
+          delay: '0'
+          history: 1w
+          trends: '0'
+          description: 'ШС №2 - ток нагрузки [A]'
+          valuemap:
+            name: 'RIP 12 mod 56 RIP 12 6 80 M3 R RS'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.status[2]'
+            -
+              type: HEX_TO_DECIMAL
+              parameters:
+                - ''
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.00390625'
+          master_item:
+            key: 'rip_12_mod_56.sh[{$MODBUS_PORT}, {$MODBUS_SLAVE}, {$STATUS_REG}]'
+          triggers:
+            -
+              expression: |
+                {last()}<>194 and 
+                {last()}<>195 and
+                {last()}<>250
+              name: 'Неизвестное состояние Iout'
+              priority: AVERAGE
+            -
+              expression: '{last()}=194'
+              name: 'Перегрузка источника питания'
+              priority: HIGH
+              description: 'Перегрузка резервированного источника питания (РИП). Выходной ток РИП более 7,5 А.'
+        -
+          name: Uout_value
+          type: EXTERNAL
+          key: 'rip_12_mod_56.sh[{$MODBUS_PORT}, {$MODBUS_SLAVE}, {$STATUS_REG}, 1]'
+          history: 1w
+          trends: '0'
+          value_type: FLOAT
+          units: В
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.00390625'
+        -
+          name: Iout_value
+          type: EXTERNAL
+          key: 'rip_12_mod_56.sh[{$MODBUS_PORT}, {$MODBUS_SLAVE}, {$STATUS_REG}, 2]'
+          history: 1w
+          trends: '0'
+          value_type: FLOAT
+          units: A
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.00390625'
+        -
+          name: Ubat1_value
+          type: EXTERNAL
+          key: 'rip_12_mod_56.sh[{$MODBUS_PORT}, {$MODBUS_SLAVE}, {$STATUS_REG}, 3]'
+          history: 1w
+          trends: '0'
+          value_type: FLOAT
+          units: V
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.00390625'
+        -
+          name: Ubat2_value
+          type: EXTERNAL
+          key: 'rip_12_mod_56.sh[{$MODBUS_PORT}, {$MODBUS_SLAVE}, {$STATUS_REG}, 4]'
+          history: 1w
+          trends: '0'
+          value_type: FLOAT
+          units: V
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.00390625'
+        -
+          name: Uin_value
+          type: EXTERNAL
+          key: 'rip_12_mod_56.sh[{$MODBUS_PORT}, {$MODBUS_SLAVE}, {$STATUS_REG}, 6]'
+          history: 1w
+          trends: '0'
+          value_type: FLOAT
+          units: В
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.00390625'
+            -
+              type: JAVASCRIPT
+              parameters:
+                - 'return value>150 ? value : 0'
+        -
+          name: Request
+          type: EXTERNAL
+          key: 'rip_12_mod_56.sh[{$MODBUS_PORT}, {$MODBUS_SLAVE}, {$STATUS_REG}]'
+          history: 1w
+          trends: '0'
+          value_type: TEXT
+          triggers:
+            -
+              expression: '{nodata({$NODATA_PERIOD})}=1'
+              name: 'Превышено время отсутствия по MODBUS'
+              priority: HIGH
+        -
+          name: Status
+          type: DEPENDENT
+          key: Status
+          delay: '0'
+          history: 1w
+          trends: '0'
+          description: 'ШС №0 - состояние прибора'
+          valuemap:
+            name: 'RIP 12 mod 56 RIP 12 6 80 M3 R RS'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.status[0]'
+            -
+              type: HEX_TO_DECIMAL
+              parameters:
+                - ''
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.00390625'
+          master_item:
+            key: 'rip_12_mod_56.sh[{$MODBUS_PORT}, {$MODBUS_SLAVE}, {$STATUS_REG}]'
+          triggers:
+            -
+              expression: '{last()}=149'
+              name: 'Взлом корпуса прибора'
+              priority: AVERAGE
+            -
+              expression: |
+                {last()}<>149 and
+                {last()}<>152 and
+                {last()}<>250
+              name: 'Неизвестное состояние Status'
+              priority: AVERAGE
+        -
+          name: Ubat1
+          type: DEPENDENT
+          key: UBAT1
+          delay: '0'
+          history: 1w
+          trends: '0'
+          description: 'ШС №3 - напряжение АКБ1 [B]'
+          valuemap:
+            name: 'RIP 12 mod 56 RIP 12 6 80 M3 R RS'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.status[3]'
+            -
+              type: HEX_TO_DECIMAL
+              parameters:
+                - ''
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.00390625'
+          master_item:
+            key: 'rip_12_mod_56.sh[{$MODBUS_PORT}, {$MODBUS_SLAVE}, {$STATUS_REG}]'
+          triggers:
+            -
+              expression: '{last()}=211'
+              name: 'АКБ1 разряжен'
+              priority: HIGH
+              description: 'Батареи нет, либо обобщённая неисправность батареи'
+            -
+              expression: '{last()}<>200 and {last()}<>202 and {last()}<>211 and {last()}<>250'
+              name: 'Неизвестное состояние АКБ1'
+              priority: AVERAGE
+            -
+              expression: '{last()}=202'
+              name: 'Неисправность батареи АКБ1'
+              priority: HIGH
+              description: 'Батареи нет, либо обобщённая неисправность батареи'
+        -
+          name: Ubat2
+          type: DEPENDENT
+          key: UBAT2
+          delay: '0'
+          history: 1w
+          trends: '0'
+          description: 'ШС №4 - напряжение АКБ2 [B]'
+          valuemap:
+            name: 'RIP 12 mod 56 RIP 12 6 80 M3 R RS'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.status[4]'
+            -
+              type: HEX_TO_DECIMAL
+              parameters:
+                - ''
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.00390625'
+          master_item:
+            key: 'rip_12_mod_56.sh[{$MODBUS_PORT}, {$MODBUS_SLAVE}, {$STATUS_REG}]'
+          triggers:
+            -
+              expression: '{last()}=211'
+              name: 'АКБ2 разряжен'
+              priority: HIGH
+              description: 'Батареи нет, либо обобщённая неисправность батареи'
+            -
+              expression: '{last()}<>200 and {last()}<>202 and {last()}<>211 and {last()}<>250'
+              name: 'Неизвестное состояние АКБ2'
+              priority: AVERAGE
+            -
+              expression: '{last()}=202'
+              name: 'Неисправность батареи АКБ2'
+              priority: HIGH
+              description: 'Батареи нет, либо обобщённая неисправность батареи'
+        -
+          name: Uin
+          type: DEPENDENT
+          key: UIN
+          delay: '0'
+          history: 1w
+          trends: '0'
+          description: 'ШС №6 - напряжение сети [В]'
+          valuemap:
+            name: 'RIP 12 mod 56 RIP 12 6 80 M3 R RS'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.status[6]'
+            -
+              type: HEX_TO_DECIMAL
+              parameters:
+                - ''
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.00390625'
+          master_item:
+            key: 'rip_12_mod_56.sh[{$MODBUS_PORT}, {$MODBUS_SLAVE}, {$STATUS_REG}]'
+          triggers:
+            -
+              expression: '{last()}=2'
+              name: 'Авария сети 220 В'
+              priority: HIGH
+              description: 'Cетевое напряжение питания ниже 150 В или выше 250 В'
+            -
+              expression: '{last()}<>1 and {last()}<>2 and {last()}<>250'
+              name: 'Неизвестное состояние Uin'
+              priority: AVERAGE
+        -
+          name: Uout
+          type: DEPENDENT
+          key: UOUT
+          delay: '0'
+          history: 1w
+          trends: '0'
+          description: 'ШС №1 - выходное напряжение [B]'
+          valuemap:
+            name: 'RIP 12 mod 56 RIP 12 6 80 M3 R RS'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.status[1]'
+            -
+              type: HEX_TO_DECIMAL
+              parameters:
+                - ''
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.00390625'
+          master_item:
+            key: 'rip_12_mod_56.sh[{$MODBUS_PORT}, {$MODBUS_SLAVE}, {$STATUS_REG}]'
+          triggers:
+            -
+              expression: |
+                {last()}<>192 and
+                {last()}<>193 and 
+                {last()}<>199 and
+                {last()}<>250
+              name: 'Неизвестное состояние Uout'
+              priority: AVERAGE
+            -
+              expression: '{last()}=192'
+              name: 'Отключение выходного напряжения'
+              priority: DISASTER
+              description: 'Выходное напряжение РИП отключено (выполнена команда отключения выходного напряжения)'
+      macros:
+        -
+          macro: '{$MODBUS_PORT}'
+          value: 'enc://127.0.0.1:4001'
+        -
+          macro: '{$MODBUS_SLAVE}'
+          value: '1'
+          description: 'Modbus UID'
+        -
+          macro: '{$NODATA_PERIOD}'
+          value: '600'
+          description: 'Если за заданный период (сек) не получено никаких данных от РИП - генерируем ошибку потеря связи'
+        -
+          macro: '{$STATUS_REG}'
+          value: '40000'
+          description: 'ШС №0 - состояние прибора'
+  triggers:
+    -
+      expression: '{RIP 12 mod 56 RIP 12 6 80 M3 R RS EXTENDED:CAPACITY.last()}=250 or {RIP 12 mod 56 RIP 12 6 80 M3 R RS EXTENDED:IOUT.last()}=250 or {RIP 12 mod 56 RIP 12 6 80 M3 R RS EXTENDED:Status.last()}=250 or {RIP 12 mod 56 RIP 12 6 80 M3 R RS EXTENDED:UBAT1.last()}=250 or {RIP 12 mod 56 RIP 12 6 80 M3 R RS EXTENDED:UBAT2.last()}=250 or {RIP 12 mod 56 RIP 12 6 80 M3 R RS EXTENDED:UIN.last()}=250 or {RIP 12 mod 56 RIP 12 6 80 M3 R RS EXTENDED:UOUT.last()}=250'
+      name: 'Потеряна связь с прибором'
+      priority: HIGH
+  graphs:
+    -
+      name: 'Выходное напряжение, напряжение на АКБ1 и АКБ2'
+      width: '1080'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 1A7C11
+          item:
+            host: 'RIP 12 mod 56 RIP 12 6 80 M3 R RS EXTENDED'
+            key: 'rip_12_mod_56.sh[{$MODBUS_PORT}, {$MODBUS_SLAVE}, {$STATUS_REG}, 3]'
+        -
+          sortorder: '2'
+          color: F63100
+          item:
+            host: 'RIP 12 mod 56 RIP 12 6 80 M3 R RS EXTENDED'
+            key: 'rip_12_mod_56.sh[{$MODBUS_PORT}, {$MODBUS_SLAVE}, {$STATUS_REG}, 4]'
+        -
+          sortorder: '3'
+          color: 2774A4
+          item:
+            host: 'RIP 12 mod 56 RIP 12 6 80 M3 R RS EXTENDED'
+            key: 'rip_12_mod_56.sh[{$MODBUS_PORT}, {$MODBUS_SLAVE}, {$STATUS_REG}, 1]'
+    -
+      name: 'Ток нагрузки'
+      width: '1080'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 1A7C11
+          item:
+            host: 'RIP 12 mod 56 RIP 12 6 80 M3 R RS EXTENDED'
+            key: 'rip_12_mod_56.sh[{$MODBUS_PORT}, {$MODBUS_SLAVE}, {$STATUS_REG}, 2]'
+  value_maps:
+    -
+      name: 'RIP 12 mod 56 RIP 12 6 80 M3 R RS'
+      mappings:
+        -
+          value: '1'
+          newvalue: 'Восстановление сети 220'
+        -
+          value: '2'
+          newvalue: 'Авария сети 220 В'
+        -
+          value: '149'
+          newvalue: 'Взлом корпуса прибора'
+        -
+          value: '152'
+          newvalue: 'Восстановление корпуса прибора'
+        -
+          value: '192'
+          newvalue: 'Отключение выходного напряжения'
+        -
+          value: '193'
+          newvalue: 'Подключение выходного напряжения'
+        -
+          value: '194'
+          newvalue: 'Перегрузка источника питания'
+        -
+          value: '195'
+          newvalue: 'Перегрузка источника питания устранена'
+        -
+          value: '196'
+          newvalue: 'Неисправность зарядного устройства'
+        -
+          value: '197'
+          newvalue: 'Восстановление зарядного устройства'
+        -
+          value: '198'
+          newvalue: 'Неисправность источника питания'
+        -
+          value: '199'
+          newvalue: 'Восстановление источника питания'
+        -
+          value: '200'
+          newvalue: 'Восстановление батареи'
+        -
+          value: '202'
+          newvalue: 'Неисправность батареи'
+        -
+          value: '204'
+          newvalue: 'Требуется обслуживание'
+        -
+          value: '205'
+          newvalue: 'Ошибка теста АКБ'
+        -
+          value: '211'
+          newvalue: 'Батарея разряжена'
+        -
+          value: '250'
+          newvalue: 'Потеряна связь с прибором'
