@@ -1,6 +1,6 @@
 zabbix_export:
   version: '5.2'
-  date: '2021-02-02T15:38:27Z'
+  date: '2021-06-29T14:10:37Z'
   groups:
     -
       name: BOLID
@@ -32,13 +32,15 @@ zabbix_export:
                 - '0.00390625'
           triggers:
             -
-              expression: '{last()}<>79 and {last()}<>80 and {last()}<>165 and {last()}<>187 and {last()}<>251'
+              expression: |
+                {last()}<>79 and {last()}<>80 and {last()}<>165 and {last()}<>187 and 
+                {last()}<>188 and {last()}<>251
               name: 'Неизвестное состояние'
               priority: AVERAGE
               tags:
                 -
                   tag: dept
-                  value: 'asu, oper'
+                  value: asu
             -
               expression: '{last()}=165'
               name: 'Ошибка параметров ШС'
